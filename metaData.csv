@@ -1,0 +1,3 @@
+lookfrom,lookat,up,image_file,point_cloud_file
+[0 0 800],[0 0 0],[1 0 0],Rh_Narpa_z800.png,rh_narpa_z800.txt
+[0 -30 750],[0 -30 0],[1 0 0],Rh_Narpa_z750.png,rh_narpa_z750.txt
