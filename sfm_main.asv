@@ -1,0 +1,47 @@
+%% Depth Estimation using NaRPA - differentiable rendering
+% Topic: Stereo vision - structure from motion
+% Ram Bhaskara | Jul 14, 2022
+% Ref: https://www.youtube.com/watch?v=OYwm4VM6uNg&ab_channel=FirstPrinciplesofComputerVision
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+clc; clear; close
+
+% Add relative paths of directories with images and 3D data
+addpath('images\','3D_data\');
+
+% Synthetic Images and point clouds are generated using NaRPA
+% https://github.tamu.edu/LASR-New/ScORE-Renderer
+
+% Image files
+% IMG_fileNames = dir(fullfile('Rh_Narpa_*.png'));
+% IMG_fileNames = {IMG_fileNames.name}';
+
+% Data read operation
+myData = readtable("metaData.xlsx"); 
+lookFroms = myData.lookfrom; 
+lookAts = myData.lookat;
+ups = myData.up; 
+imgFiles = myData.image_file; 
+pcFiles = myData.point_cloud_file; 
+
+%% Extract features between Img1 and Img2
+Img1 = imgFiles{1};
+Img2 = imgFiles{2}; 
+
+[f1, f2] = matchFeatures_truthInit(Img1, Img2);
+%% Body frame to Sensor frame transformation
+
+LookFrom_frame1 = str2double(lookFroms{1}); 
+LookAt_frame1 = str2double(lookAts{1});
+up_frame1 = str2double(ups{1});
+R_frame1 = cameraDCM(LookFrom_frame1, LookAt_frame1, up_frame1);
+t_frame1 = R_frame1' * ([0 0 0]' - LookFrom_frame1);
+Rt_frame1 = [R_frame1',t_frame1];
+
+LookFrom_frame2 = str2double(lookFroms{2}); 
+LookAt_frame2 = str2double(lookAts{2});
+up_frame2 = str2double(ups{2});
+R_frame2 = cameraDCM(LookFrom_frame2, LookAt_frame1, up_frame1);
+t_frame2 = R_frame2' * ([0 0 0]' - LookFrom_frame1);
+Rt_frame1 = [R_frame1',t_frame1];
