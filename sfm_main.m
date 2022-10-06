@@ -96,8 +96,11 @@ end
 figure 
 imshow(Img1); 
 hold on
-plot(uv_truth(1,:),uv_truth(2,:),'or','MarkerSize',7,'MarkerFaceColor','auto');
-plot(uv_est(1,:),uv_est(2,:),'^g','MarkerSize',5,'MarkerFaceColor','auto');
+plot(uv_truth(1,:),uv_truth(2,:),'or','MarkerSize',10,'MarkerFaceColor','none');
+plot(uv_est(1,:),uv_est(2,:),'^g','MarkerSize',5,'MarkerFaceColor','none');
 hold off
-title('Truth vs estimated pixel coordinates')
-legend('Truth','Estimate')
+% title('Truth vs estimated pixel coordinates')
+legend('Truth','Estimate','Fontsize',15)
+%% Absolute error percentages
+abs_errors = abs(point3d_SF_estimate - point3d_SF_truth)./abs(point3d_SF_truth); 
+abs_percentages = abs_errors*100
