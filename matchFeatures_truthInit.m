@@ -1,4 +1,4 @@
-function [F1,F2] = matchFeatures_truthInit(img_true, img_guess)
+function [F1,F2] = matchFeatures_truthInit(img_true, img_guess, nFeatures)
     
     % Extract features from true and create four strong feature matches between
     % the true and the guessed images
@@ -44,8 +44,8 @@ end
 
 % Only select the top four matched points
 
-matchedPoints1 = matchedPoints1(id(1:4));
-matchedPoints2 = matchedPoints2(id(1:4));
+matchedPoints1 = matchedPoints1(id(1:nFeatures));
+matchedPoints2 = matchedPoints2(id(1:nFeatures));
 
 figure; 
 showMatchedFeatures(IM1,IM2,matchedPoints1,matchedPoints2);

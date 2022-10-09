@@ -29,7 +29,8 @@ pcFiles = myData.point_cloud_file;
 Img1 = imgFiles{1};
 Img2 = imgFiles{2}; 
 
-[f1, f2] = matchFeatures_truthInit(Img1, Img2);
+nFeatures = 4,
+[f1, f2] = matchFeatures_truthInit(Img1, Img2, nFeatures);
 %% Body frame to Sensor frame transformation
 
 LookFrom_frame1 = str2num(lookFroms{1})'; 
@@ -103,4 +104,11 @@ hold off
 legend('Truth','Estimate','Fontsize',15)
 %% Absolute error percentages
 abs_errors = abs(point3d_SF_estimate - point3d_SF_truth)./abs(point3d_SF_truth); 
-abs_percentages = abs_errors*100
+abs_percentages = abs_errors*100; 
+
+figure
+
+boxplot(abs_percentages','Labels',{'x-axis','y-axis','z-axis'});
+set(findobj(gca,'Type','text'), 'type', 'text','fontsize',15);
+% xlabel({'x-axis','y-axis','z-axis'},'FontSize',15)
+ylabel('Error %','FontSize',15)
