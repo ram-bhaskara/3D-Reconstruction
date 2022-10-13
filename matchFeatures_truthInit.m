@@ -1,4 +1,4 @@
-function [F1,F2] = matchFeatures_truthInit(img_true, img_guess)
+function [F1,F2] = matchFeatures_truthInit(img_true, img_guess, nFeatures)
     
     % Extract features from true and create four strong feature matches between
     % the true and the guessed images
@@ -6,9 +6,10 @@ function [F1,F2] = matchFeatures_truthInit(img_true, img_guess)
     IM1 = rgb2gray(imread(img_true));
     IM2 = rgb2gray(imread(img_guess));
 
-%     points1 = detectMinEigenFeatures(IM1,'ROI', [1 1 500 495]);
-    points1 = detectMinEigenFeatures(IM1,'ROI', [150 150 200 200]);
+    points1 = detectMinEigenFeatures(IM1,'ROI', [75 75 250 250]);
     points2 = detectMinEigenFeatures(IM2,'ROI', [1 1 500 495]);
+%     points1 = detectSURFFeatures(IM1,'ROI', [1 1 500 495],'MetricThreshold',2000);
+%     points2 = detectSURFFeatures(IM2,'ROI', [1 1 500 495],'MetricThreshold',2000);
     [features1,validPoints1] = extractFeatures(IM1,points1);
     [features2,validPoints2] = extractFeatures(IM2,points2);
     
@@ -19,7 +20,14 @@ function [F1,F2] = matchFeatures_truthInit(img_true, img_guess)
 %   plot(points);
 %   hold off 
 
-[indexPairs,matchmetric] = matchFeatures(features1,features2,'MaxRatio',0.7, ...
+nDetFeats = length(points1); 
+
+if (nDetFeats >= nFeatures)
+    nDetFeats = nFeatures;
+end
+
+
+[indexPairs,matchmetric] = matchFeatures(features1,features2,'MaxRatio',0.9, ...
     'Unique',true);
 
 % % sort matchmetric to find the strongest matches
@@ -44,8 +52,8 @@ end
 
 % Only select the top four matched points
 
-matchedPoints1 = matchedPoints1(id(1:4));
-matchedPoints2 = matchedPoints2(id(1:4));
+matchedPoints1 = matchedPoints1(id(1:nDetFeats));
+matchedPoints2 = matchedPoints2(id(1:nDetFeats));
 
 figure; 
 showMatchedFeatures(IM1,IM2,matchedPoints1,matchedPoints2);

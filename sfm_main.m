@@ -29,7 +29,8 @@ pcFiles = myData.point_cloud_file;
 Img1 = imgFiles{1};
 Img2 = imgFiles{2}; 
 
-[f1, f2] = matchFeatures_truthInit(Img1, Img2);
+nFeatures = 100;
+[f1, f2] = matchFeatures_truthInit(Img1, Img2, nFeatures);
 %% Body frame to Sensor frame transformation
 
 LookFrom_frame1 = str2num(lookFroms{1})'; 
@@ -57,8 +58,8 @@ K = cameraIntrinsicMat(); % Image resolution and camera properties
 
 % Find 3D interest points
 [xm,ym,zm,u,v,U,V] = readImage(pcFiles{1}, f1);
-disp([u,v])
-disp([xm,ym,zm])
+% disp([u,v])
+% disp([xm,ym,zm])
 
 %% Ground truth 3D coordinates
 coords_3d = [xm ym zm]'; 
@@ -70,13 +71,20 @@ end
 %% Depth estimation in sensor frame
 K1 = cameraIntrinsicMat();
 K2 = cameraIntrinsicMat();
-point3d_SF_estimate = zeros(3, length(coords_3d)); 
+point3d_SF_estimate = zeros(3, length(coords_3d)); % least squares
+point3d_SF_estimate2 = point3d_SF_estimate; % perspective projtxn soln
+% for ii = 1:length(coords_3d)
+%     pixel_coords = [[500, 500] - f1(ii,:); [500, 500] - f2(ii,:)]; % [u1, v1; u2, v2]
+% % pixel_coords = [f1(ii,:); f2(ii,:)];   
+% point3d_SF_estimate(:,ii) = compute_point(pixel_coords, K1, K2, Rt_f1f2);  % estimate in sensor frame
+% end
 
+%%
 for ii = 1:length(coords_3d)
     pixel_coords = [[500, 500] - f1(ii,:); [500, 500] - f2(ii,:)]; % [u1, v1; u2, v2]
-    point3d_SF_estimate(:,ii) = compute_point(pixel_coords, K1, K2, Rt_f1f2);  % estimate in sensor frame
+% pixel_coords = [f1(ii,:); f2(ii,:)];   
+point3d_SF_estimate2(:,ii) = compute_point2(pixel_coords, K1, K2, Rt_f1f2);  % estimate in sensor frame
 end
-
 
 %% Verify UV points 
 uv_truth = zeros(2, length(coords_3d)); 
@@ -87,17 +95,57 @@ for ii = 1:length(coords_3d)
     uvw_truth = [500; 500; 1] - uvw_truth;
     uv_truth(:,ii) = uvw_truth(1:2);
 
-    x_new_est = K*point3d_SF_estimate(:,ii);
+    x_new_est = K*point3d_SF_estimate2(:,ii);
     uvw_est = x_new_est./x_new_est(3);
     uvw_est = [500; 500; 1] - uvw_est;
     uv_est(:,ii) = uvw_est(1:2);
 end
 
+pixel_dist = zeros(length(coords_3d),1);
+for ii = 1:length(coords_3d)
+    pixel_dist(ii) = pdist([transpose(uv_truth(:,ii)); transpose(uv_est(:,ii))],'euclidean');
+end
+
+[pixel_errors, ID_px_err] = sort(pixel_dist); 
+sorted_uv_truth = uv_truth(:,ID_px_err);
+sorted_uv_est = uv_est(:,ID_px_err);
+
 figure 
+% Worst 20 pixel map
 imshow(Img1); 
 hold on
-plot(uv_truth(1,:),uv_truth(2,:),'or','MarkerSize',7,'MarkerFaceColor','auto');
-plot(uv_est(1,:),uv_est(2,:),'^g','MarkerSize',5,'MarkerFaceColor','auto');
+plot(sorted_uv_truth(1,end-20:end),sorted_uv_truth(2,end-20:end),'og','MarkerSize',10,'MarkerFaceColor','none');
+plot(sorted_uv_est(1,end-20:end),sorted_uv_est(2,end-20:end),'xr','MarkerSize',8,'MarkerFaceColor','none');
 hold off
-title('Truth vs estimated pixel coordinates')
-legend('Truth','Estimate')
+% title('Truth vs estimated pixel coordinates')
+legend('Truth','Estimate','Fontsize',15)
+
+% figure 
+% % Best 20 pixel map
+% imshow(Img1); 
+% hold on
+% plot(sorted_uv_truth(1,1:20),sorted_uv_truth(2,1:20),'^b','MarkerSize',10,'MarkerFaceColor','none');
+% plot(sorted_uv_est(1,1:20),sorted_uv_est(2,1:20),'xr','MarkerSize',8,'MarkerFaceColor','none');
+% hold off
+% % title('Truth vs estimated pixel coordinates')
+% legend('Truth','Estimate','Fontsize',15)
+%% Relative error percentages
+rel_errors = abs(point3d_SF_estimate2 - point3d_SF_truth)./abs(point3d_SF_truth); 
+rel_percentages = rel_errors*100; 
+
+abs_errors = abs(point3d_SF_estimate2 - point3d_SF_truth);
+
+figure
+subplot(2,1,1)
+h = boxplot(abs_errors','Labels',{'x','y','z'}, ...
+    'PlotStyle','compact','Symbol','+r','Jitter',0,'Orientation','horizontal');
+set(findobj(get(h(1), 'parent'), 'type', 'text'), 'fontsize', 15);
+xlabel('Absolute Errors (m)','FontSize',15)
+
+subplot(2,1,2)
+h = boxplot(rel_percentages','Notch','off','Labels',{'x','y','z'}, ...
+    'PlotStyle','compact','Symbol','+r','Jitter',0,'Orientation','horizontal');
+set(findobj(get(h(1), 'parent'), 'type', 'text'), 'fontsize', 15);
+xlabel('Relative Error (%)','fontsize',15)
+
+

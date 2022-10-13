@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scene version="0.5.0">
+   <shape type="obj">
+      <string name="filename" value="rheasilvia_depthPaper4.obj"/>
+      <transform name="toWorld"/>
+   </shape>
+   <integrator type="path"/>
+   <emitter type="sun">
+      <integer name="year" value="2019"/>
+      <integer name="month" value="05"/>
+      <integer name="day" value="15"/>
+      <float name="hour" value="13"/>
+      <float name="minute" value="00"/>
+      <float name="latitude" value="30.6"/>
+      <float name="longitude" value="-96.31"/>
+      <float name="timezone" value="-5"/>
+   </emitter>
+   <sensor type="thinlens">
+      <float name="apertureRadius" value="0"/>
+      <float name="farClip" value="20000"/>
+      <float name="focusDistance" value="581.364"/>
+      <float name="fov" value="30"/>
+      <string name="fovAxis" value="y"/>
+      <float name="nearClip" value="1.35182"/>
+      <transform name="toWorld">
+         <lookat origin="0,-10,790" target="0,-10,0" up="1,0,0"/>
+      </transform>
+      <sampler type="ldsampler">
+         <integer name="sampleCount" value="256"/>
+      </sampler>
+      <film type="ldrfilm">
+         <integer name="width" value="500"/>
+         <integer name="height" value="500"/>
+         <rfilter type="gaussian"/>
+      </film>
+   </sensor>
+</scene>
