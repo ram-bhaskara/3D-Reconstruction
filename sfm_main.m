@@ -73,20 +73,24 @@ K1 = cameraIntrinsicMat();
 K2 = cameraIntrinsicMat();
 point3d_SF_estimate = zeros(3, length(coords_3d)); % least squares
 point3d_SF_estimate2 = point3d_SF_estimate; % perspective projtxn soln
+
+%%% LEAST SQUARES APPROACH
+
 % for ii = 1:length(coords_3d)
 %     pixel_coords = [[500, 500] - f1(ii,:); [500, 500] - f2(ii,:)]; % [u1, v1; u2, v2]
 % % pixel_coords = [f1(ii,:); f2(ii,:)];   
 % point3d_SF_estimate(:,ii) = compute_point(pixel_coords, K1, K2, Rt_f1f2);  % estimate in sensor frame
 % end
 
-%%
+%%% SUBSTITUTION APPROACH 
+
 for ii = 1:length(coords_3d)
-    pixel_coords = [[500, 500] - f1(ii,:); [500, 500] - f2(ii,:)]; % [u1, v1; u2, v2]
-% pixel_coords = [f1(ii,:); f2(ii,:)];   
-point3d_SF_estimate2(:,ii) = compute_point2(pixel_coords, K1, K2, Rt_f1f2);  % estimate in sensor frame
+    pixel_coords = [[500, 500] - f1(ii,:); [500, 500] - f2(ii,:)]; % [u1, v1; u2, v2] 
+    point3d_SF_estimate2(:,ii) = compute_point2(pixel_coords, K1, K2, Rt_f1f2);  % estimate in sensor frame
 end
 
-%% Verify UV points 
+%% COMPARISON WITH GROUND TRUTH: Verify UV points 
+
 uv_truth = zeros(2, length(coords_3d)); 
 uv_est = uv_truth; 
 for ii = 1:length(coords_3d)
@@ -129,7 +133,7 @@ legend('Truth','Estimate','Fontsize',15)
 % hold off
 % % title('Truth vs estimated pixel coordinates')
 % legend('Truth','Estimate','Fontsize',15)
-%% Relative error percentages
+%% VALIDATION METRICS: Relative error percentages
 rel_errors = abs(point3d_SF_estimate2 - point3d_SF_truth)./abs(point3d_SF_truth); 
 rel_percentages = rel_errors*100; 
 
